@@ -1,0 +1,67 @@
+name: Build Collections
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+env:
+  PUSH_BRANCH: "main"
+
+jobs:
+  build-push-collection:
+    permissions:
+      contents: write
+      packages: write
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setting Workflow Variables
+        id: set-workflow-variables
+        run: |
+          PUSH_EVENT='false'
+
+          if [[ "${{ github.ref }}" =~ ^refs/tags/ ]]; then
+            PUSH_EVENT='true'
+          fi
+
+          BRANCH_NAME="$(echo ${GITHUB_REF#refs/heads/})"
+          if [ "$BRANCH_NAME" == "${{ env.PUSH_BRANCH }}" ]; then
+            PUSH_EVENT='true'
+          fi
+
+          echo "::set-output name=push_event::$PUSH_EVENT"
+
+        # Manually download client. To be replaced with dynamic downloader next client release
+      - name: Download Client
+        run: |
+          curl -Ls https://github.com/uor-framework/uor-client-go/releases/download/v0.3.0-alpha.1/uor-client-go-linux-amd64.tar.gz | tar xvz -f - -C /usr/local/bin
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Registry
+        if: ${{ steps.set-workflow-variables.outputs.push_event == 'true' }}
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Collections
+        run: |
+          PUSH=""
+
+          if [ "${{ steps.set-workflow-variables.outputs.push_event }}" == "true" ]; then
+            PUSH="--push"
+          fi
+
+          ${GITHUB_WORKSPACE}/scripts/build-push-collections.sh -d=${GITHUB_WORKSPACE}/collections -c=/usr/local/bin/uor-client-go-linux-amd64 -r=ghcr.io/${GITHUB_REPOSITORY} ${PUSH}
