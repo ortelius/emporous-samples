@@ -35,15 +35,14 @@ jobs:
 
           echo "::set-output name=push_event::$PUSH_EVENT"
 
-        # Manually download client. To be replaced with dynamic downloader next client release
-      - name: Download Client
-        run: |
-          curl -Ls https://github.com/uor-framework/uor-client-go/releases/download/v0.3.0-alpha.1/uor-client-go-linux-amd64.tar.gz | tar xvz -f - -C /usr/local/bin
-
       - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
+      - name: Download Client
+        run: |
+          ${GITHUB_WORKSPACE}/scripts/download-client.sh -d=/usr/local/bin/uor-client-go
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -64,4 +63,4 @@ jobs:
             PUSH="--push"
           fi
 
-          ${GITHUB_WORKSPACE}/scripts/build-push-collections.sh -d=${GITHUB_WORKSPACE}/collections -c=/usr/local/bin/uor-client-go-linux-amd64 -r=ghcr.io/${GITHUB_REPOSITORY} ${PUSH}
+          ${GITHUB_WORKSPACE}/scripts/build-push-collections.sh -d=${GITHUB_WORKSPACE}/collections -c=/usr/local/bin/uor-client-go -r=ghcr.io/${GITHUB_REPOSITORY} ${PUSH}
