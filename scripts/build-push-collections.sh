@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 CLIENT="uor-client-go"
 COLLECTION_TAG="latest"
 CLIENT_ARGS=""
@@ -69,7 +71,7 @@ function build_destination_artifact() {
 
 for directory in `ls -d -- ${COLLECTIONS_DIRECTORY}/*`; do
 
-  client_build_cmd="${CLIENT} build${CLIENT_ARGS}"
+  client_build_cmd="${CLIENT} build collection${CLIENT_ARGS}"
 
   dirname="$(basename "${directory}")"
 

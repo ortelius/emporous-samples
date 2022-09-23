@@ -1,20 +1,21 @@
 kind: DataSetConfiguration
 apiVersion: client.uor-framework.io/v1alpha1
-files:
-  - file: "*.jpeg"
-    attributes:
-      domain: eukarya
-      kingdom: animalia
-      phylum: chordate
-  - file: "*dog*"
-    attributes:
-      class: mammal
-      order: carnivora
-      family: canidae
-      genus: canis
-  - file: "*fish*"
-    attributes:
-      class: ctinopterygii
-      order: cypriniformes
-      family: cyprinidae
-      genus: carassius
+collection:
+  files:
+    - file: "*.jpeg"
+      attributes:
+        domain: eukarya
+        kingdom: animalia
+        phylum: chordate
+    - file: "*dog*"
+      attributes:
+        class: mammal
+        order: carnivora
+        family: canidae
+        genus: canis
+    - file: "*fish*"
+      attributes:
+        class: ctinopterygii
+        order: cypriniformes
+        family: cyprinidae
+        genus: carassius
