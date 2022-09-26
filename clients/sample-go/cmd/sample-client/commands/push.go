@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	managerapi "github.com/uor-framework/uor-client-go/api/services/collectionmanager/v1alpha1"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 // PushOptions describe configuration options that can
@@ -16,7 +17,6 @@ type PushOptions struct {
 	*RootOptions
 	RootDir     string
 	Destination string
-	DSConfig    string
 }
 
 // NewPushCmd creates a new cobra.Command for the push subcommand.
@@ -34,8 +34,6 @@ func NewPushCmd(rootOpts *RootOptions) *cobra.Command {
 			cobra.CheckErr(o.Run(cmd.Context()))
 		},
 	}
-
-	cmd.Flags().StringVar(&o.DSConfig, "dsconfig", o.DSConfig, "dataset configuration path")
 
 	return cmd
 }
@@ -56,19 +54,46 @@ func (o *PushOptions) Run(ctx context.Context) error {
 		return err
 	}
 
-	var config []byte
-	if o.DSConfig != "" {
-		config, err = ioutil.ReadFile(o.DSConfig)
-		if err != nil {
-			return err
-		}
+	absRootDir, err := filepath.Abs(o.RootDir)
+	if err != nil {
+		return err
 	}
 
 	req := managerapi.Publish_Request{
-		Source:      o.RootDir,
+		Source:      absRootDir,
 		Destination: o.Destination,
-		Json:        config,
+		Collection:  &managerapi.Collection{},
 	}
+
+	// Add sample client specific attributes
+	sampleClientAttributes := map[string]map[string]interface{}{
+		"*.jpg": {
+			"image": true,
+		},
+		"*.json": {
+			"metadata": true,
+		},
+	}
+
+	for file, attr := range sampleClientAttributes {
+		for k, v := range attr {
+			fmt.Fprintf(o.IOStreams.Out, "Adding attributes %v=%v to file pattern %s\n", k, v, file)
+		}
+
+	}
+
+	for file, attr := range sampleClientAttributes {
+		a, err := structpb.NewStruct(attr)
+		if err != nil {
+			return err
+		}
+		f := &managerapi.File{
+			File:       file,
+			Attributes: a,
+		}
+		req.Collection.Files = append(req.Collection.Files, f)
+	}
+
 	resp, err := client.PublishContent(ctx, &req)
 	if err != nil {
 		return err

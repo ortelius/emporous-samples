@@ -73,4 +73,4 @@ require (
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 
-replace github.com/uor-framework/uor-client-go v0.3.0 => github.com/jpower432/client v0.0.0-20220922225639-3674b84155e1
+replace github.com/uor-framework/uor-client-go v0.3.0 => github.com/jpower432/client v0.0.0-20220926203111-c613de12a79b
