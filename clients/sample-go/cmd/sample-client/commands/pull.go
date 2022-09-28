@@ -4,8 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	managerapi "github.com/uor-framework/uor-client-go/api/services/collectionmanager/v1alpha1"
@@ -27,11 +26,11 @@ func NewPullCmd(rootOpts *RootOptions) *cobra.Command {
 	o := PullOptions{RootOptions: rootOpts}
 
 	cmd := &cobra.Command{
-		Use:           "pull SOCKET-LOCATION SRC",
+		Use:           "pull SRC",
 		Short:         "Pull a UOR collection based on content or attribute address",
 		SilenceErrors: false,
 		SilenceUsage:  false,
-		Args:          cobra.ExactArgs(2),
+		Args:          cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			cobra.CheckErr(o.Complete(args))
 			cobra.CheckErr(o.Run(cmd.Context()))
@@ -45,25 +44,26 @@ func NewPullCmd(rootOpts *RootOptions) *cobra.Command {
 }
 
 func (o *PullOptions) Complete(args []string) error {
-	if len(args) < 2 {
+	if len(args) < 1 {
 		return errors.New("not enough arguments")
 	}
-	o.ServerAddress = args[0]
-	o.Source = args[1]
+	o.Source = args[0]
 
-	cwd, err := os.Getwd()
+	absPath, err := filepath.Abs(o.Output)
 	if err != nil {
 		return err
 	}
-	o.Output = path.Join(cwd, o.Output)
+
+	o.Output = absPath
 	return nil
 }
 
 func (o *PullOptions) Run(ctx context.Context) error {
-	client, err := clientSetup(ctx, o.ServerAddress)
+	client, cleanup, err := clientSetup(ctx, o.ServerAddress)
 	if err != nil {
 		return err
 	}
+	defer cleanup()
 
 	req := managerapi.Retrieve_Request{
 		Source:      o.Source,

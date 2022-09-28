@@ -24,11 +24,11 @@ func NewPushCmd(rootOpts *RootOptions) *cobra.Command {
 	o := PushOptions{RootOptions: rootOpts}
 
 	cmd := &cobra.Command{
-		Use:           "push SOCKET-LOCATION SRC DST",
+		Use:           "push SRC DST",
 		Short:         "Build and push a UOR collection from a workspace",
 		SilenceErrors: false,
 		SilenceUsage:  false,
-		Args:          cobra.ExactArgs(3),
+		Args:          cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
 			cobra.CheckErr(o.Complete(args))
 			cobra.CheckErr(o.Run(cmd.Context()))
@@ -39,20 +39,20 @@ func NewPushCmd(rootOpts *RootOptions) *cobra.Command {
 }
 
 func (o *PushOptions) Complete(args []string) error {
-	if len(args) < 3 {
+	if len(args) < 2 {
 		return errors.New("not enough arguments")
 	}
-	o.ServerAddress = args[0]
-	o.RootDir = args[1]
-	o.Destination = args[2]
+	o.RootDir = args[0]
+	o.Destination = args[1]
 	return nil
 }
 
 func (o *PushOptions) Run(ctx context.Context) error {
-	client, err := clientSetup(ctx, o.ServerAddress)
+	client, cleanup, err := clientSetup(ctx, o.ServerAddress)
 	if err != nil {
 		return err
 	}
+	defer cleanup()
 
 	absRootDir, err := filepath.Abs(o.RootDir)
 	if err != nil {

@@ -37,6 +37,8 @@ func NewRootCmd() *cobra.Command {
 		},
 	}
 
+	cmd.PersistentFlags().StringVarP(&o.ServerAddress, "socket-address", "s", "/var/run/uor.sock", "location of unix domain socket")
+
 	cmd.AddCommand(NewPullCmd(&o))
 	cmd.AddCommand(NewPushCmd(&o))
 
@@ -44,14 +46,17 @@ func NewRootCmd() *cobra.Command {
 }
 
 // clientSetup creates a new CollectionManagerClient instance from given inputs.
-func clientSetup(ctx context.Context, serverAddress string) (managerapi.CollectionManagerClient, error) {
+func clientSetup(ctx context.Context, serverAddress string) (managerapi.CollectionManagerClient, func() error, error) {
 	conn, err := grpc.DialContext(ctx, serverAddress, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(unixConnect))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	client := managerapi.NewCollectionManagerClient(conn)
-	return client, nil
+	cleanup := func() error {
+		return conn.Close()
+	}
+	return client, cleanup, nil
 }
 
 // unixConnect creates a unix address from a given input.
