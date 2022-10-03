@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/cobra"
 	managerapi "github.com/uor-framework/uor-client-go/api/services/collectionmanager/v1alpha1"
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/uor-framework/samples/clients/sample-go/cmd/sample-client/commands/internal"
 )
 
 // PushOptions describe configuration options that can
@@ -93,6 +95,12 @@ func (o *PushOptions) Run(ctx context.Context) error {
 		}
 		req.Collection.Files = append(req.Collection.Files, f)
 	}
+
+	cred, err := internal.GetCredentials(o.Destination)
+	if err != nil {
+		return err
+	}
+	req.Auth = cred
 
 	resp, err := client.PublishContent(ctx, &req)
 	if err != nil {

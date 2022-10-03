@@ -10,6 +10,8 @@ import (
 	managerapi "github.com/uor-framework/uor-client-go/api/services/collectionmanager/v1alpha1"
 	"github.com/uor-framework/uor-client-go/config"
 	"google.golang.org/protobuf/types/known/structpb"
+
+	"github.com/uor-framework/samples/clients/sample-go/cmd/sample-client/commands/internal"
 )
 
 // PullOptions describe configuration options that can
@@ -83,6 +85,12 @@ func (o *PullOptions) Run(ctx context.Context) error {
 
 		req.Filter = filter
 	}
+
+	cred, err := internal.GetCredentials(o.Source)
+	if err != nil {
+		return err
+	}
+	req.Auth = cred
 
 	resp, err := client.RetrieveContent(ctx, &req)
 	if err != nil {
