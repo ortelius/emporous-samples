@@ -42,7 +42,7 @@ jobs:
 
       - name: Download Client
         run: |
-          ${GITHUB_WORKSPACE}/scripts/download-client.sh -d=/usr/local/bin/uor-client-go
+          ${GITHUB_WORKSPACE}/scripts/download-client.sh -d=/usr/local/bin/emporous
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -63,4 +63,4 @@ jobs:
             PUSH="--push"
           fi
 
-          ${GITHUB_WORKSPACE}/scripts/build-push-collections.sh -d=${GITHUB_WORKSPACE}/collections -c=/usr/local/bin/uor-client-go -r=ghcr.io/${GITHUB_REPOSITORY} ${PUSH}
+          ${GITHUB_WORKSPACE}/scripts/build-push-collections.sh -d=${GITHUB_WORKSPACE}/collections -c=/usr/local/bin/emporous -r=ghcr.io/${GITHUB_REPOSITORY} ${PUSH}
