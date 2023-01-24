@@ -1,8 +1,8 @@
 #!/bin/bash
 
-CLIENT_NAME=uor-client-go
-GITHUB_ORGANIZATION=uor-framework
-GITHUB_REPOSITORY=uor-client-go
+CLIENT_NAME=emporous
+GITHUB_ORGANIZATION=emporous
+GITHUB_REPOSITORY=emporous-go
 PLATFORM=$(uname | tr '[:upper:]' '[:lower:]')
 ARCH="amd64"
 DESTINATION=""

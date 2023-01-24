@@ -2,7 +2,7 @@
 
 set -e
 
-CLIENT="uor-client-go"
+CLIENT="emporous"
 COLLECTION_TAG="latest"
 CLIENT_ARGS=""
 PUSH="false"
@@ -77,7 +77,7 @@ for directory in `ls -d -- ${COLLECTIONS_DIRECTORY}/*`; do
 
   destination=$(build_destination_artifact ${REPOSITORY} ${dirname} ${COLLECTION_TAG})
   
-  client_build_cmd+=" ${directory} ${destination}"
+  client_build_cmd+=" . ${destination}"
 
   # Find dsconfig file
   dsconfig_file=$(find ${directory} -name "*.yaml" | head -n 1)
@@ -112,7 +112,7 @@ if [ "${PUSH}" == "true" ]; then
         pushd "${directory}" >/dev/null 2>&1
         
         echo
-        echo "== Pushig Collection '${dirname}' =="
+        echo "== Pushing Collection '${dirname}' =="
         echo
         eval "${client_push_cmd}"
         
